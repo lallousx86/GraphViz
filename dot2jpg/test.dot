@@ -1,0 +1,8 @@
+digraph TestMe
+{
+  Elias -> WinGraph;
+  WinGraph -> dot2jpg;
+  dot2jpg -> PictView;
+  PictView -> Jan;
+  Jan -> Elias;
+}
