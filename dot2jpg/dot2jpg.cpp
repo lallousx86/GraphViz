@@ -1,16 +1,13 @@
 #ifdef UNICODE
-#error cannot compile in unicode yet
+    #error cannot compile in unicode yet
 #endif
 
 #define _CRT_SECURE_NO_DEPRECATE
-#include <atlbase.h>
-#include <iostream>
-#include <string>
+#include <windows.h>
+#include <string.h>
 #include <stdio.h>
-
+#include "dot2jpg.h"
 #include "WinGraphviz.h"
-
-using namespace std;
 
 /*
 Sample digraph
@@ -18,141 +15,168 @@ Sample digraph
 
 digraph G 
 {
-	A [label="hi"];
-	A -> B -> C -> A;
+    A [label="hi"];
+    A -> B -> C -> A;
 }
 */
 
-//////////////////////////////////////////////////////////////////////////
-static bool read_to_str(const char *fn, std::string &str)
+//-------------------------------------------------------------------------
+static bool read_to_str(const char *fn, mybstr_t &str)
 {
-	FILE *fp = fopen(fn, "rb");
-	if (fp == NULL)
-		return false;
+    FILE *fp = fopen(fn, "rb");
+    if (fp == NULL)
+        return false;
 
-	fseek(fp, 0, SEEK_END);
+    fseek(fp, 0, SEEK_END);
 
-	long sz = ftell(fp);
+    long sz = ftell(fp);
 
-	fseek(fp, 0, SEEK_SET);
+    fseek(fp, 0, SEEK_SET);
 
-	char *buf = new char[sz + 2];
+    char *buf = new char[sz + 2];
 
-	fread(buf, 1, sz, fp);
+    fread(buf, 1, sz, fp);
 
-	buf[sz] = 0;
+    buf[sz] = 0;
 
-	str = buf;
+    // Create BSTR
+    mybstr_t s(buf);
 
-	delete[] buf;
+    delete[] buf;
 
-	fclose(fp);
+    fclose(fp);
 
-	return true;
+    if (!s)
+        return false;
+
+    s.detach(str);
+
+    return true;
 }
 
-//////////////////////////////////////////////////////////////////////////
+//-------------------------------------------------------------------------
 static HRESULT __stdcall MyCoCreateInstance(
-	LPCTSTR szDllName,
-	IN REFCLSID rclsid,
-	IUnknown* pUnkOuter,
-	IN REFIID riid,
-	OUT LPVOID FAR* ppv)
+    LPCTSTR szDllName,
+    IN REFCLSID rclsid,
+    IUnknown* pUnkOuter,
+    IN REFIID riid,
+    OUT LPVOID FAR* ppv)
 {
-	HRESULT hr = S_FALSE;
+    HRESULT hr = S_FALSE;
 
-	HMODULE hDll = ::LoadLibrary(szDllName);
-	if (hDll == NULL)
-		return hr;
+    HMODULE hDll = ::LoadLibrary(szDllName);
+    if (hDll == NULL)
+        return hr;
 
-	typedef HRESULT(__stdcall *pDllGetClassObject)(IN REFCLSID rclsid, IN REFIID riid, OUT LPVOID FAR* ppv);
+    typedef HRESULT(__stdcall *pDllGetClassObject)(IN REFCLSID rclsid, IN REFIID riid, OUT LPVOID FAR* ppv);
 
-	pDllGetClassObject GetClassObject = (pDllGetClassObject)::GetProcAddress(hDll, "DllGetClassObject");
-	if (GetClassObject == 0)
-	{
-		::FreeLibrary(hDll);
-		return hr;
-	}
+    pDllGetClassObject GetClassObject = (pDllGetClassObject)::GetProcAddress(hDll, "DllGetClassObject");
+    if (GetClassObject == 0)
+    {
+        ::FreeLibrary(hDll);
+        return hr;
+    }
 
-	IClassFactory *pIFactory;
+    IClassFactory *pIFactory;
 
-	hr = GetClassObject(rclsid, IID_IClassFactory, (LPVOID *)&pIFactory);
+    hr = GetClassObject(rclsid, IID_IClassFactory, (LPVOID *)&pIFactory);
 
-	if (!SUCCEEDED(hr))
-		return hr;
+    if (!SUCCEEDED(hr))
+        return hr;
 
-	hr = pIFactory->CreateInstance(pUnkOuter, riid, ppv);
+    hr = pIFactory->CreateInstance(pUnkOuter, riid, ppv);
 
-	pIFactory->Release();
+    pIFactory->Release();
 
-	return hr;
+    return hr;
 }
 
-//////////////////////////////////////////////////////////////////////////
-int main(int argc, char* argv[])
+
+//-------------------------------------------------------------------------
+int main(int argc, char *argv[])
 {
-	USES_CONVERSION;
-	HRESULT hr;
-	IDOT * pIDOT;
-	CComBSTR result;
+    if (argc < 3)
+    {
+        printf("Usage: dot_to_jpg FileName.dot FileName.Jpg\n");
+        return 0;
+    }
 
-	if (argc < 3)
-	{
-		cout << "Usage: dot_to_jpg FileName.dot FileName.Jpg" << endl;
-		return -1;
-	}
-	hr = CoInitialize(NULL);
+    HRESULT hr = CoInitialize(nullptr);
+    if (FAILED(hr))
+    {
+        printf("CoInitialize Failed: %08X\n", hr);
+        return -1;
+    }
 
-	if (FAILED(hr))
-	{
-		cout << "CoInitialize Failed: " << hr << "\n\n";
-		exit(1);
-	}
+    IDOT *pIDOT = nullptr;
+    hr = CoCreateInstance(
+        CLSID_DOT, 
+        nullptr,
+        CLSCTX_ALL,
+        IID_IDOT, (LPVOID *)&pIDOT);
 
-	hr = CoCreateInstance(
-		CLSID_DOT, 
-		NULL, CLSCTX_ALL,
-		IID_IDOT, (LPVOID *)&pIDOT);
+    if (hr == REGDB_E_CLASSNOTREG)
+        hr = MyCoCreateInstance("WinGraphViz.dll", CLSID_DOT, NULL, IID_IDOT, (LPVOID *)&pIDOT);
 
-	if (hr == REGDB_E_CLASSNOTREG)
-		hr = MyCoCreateInstance(_T("WinGraphViz.dll"), CLSID_DOT, NULL, IID_IDOT, (LPVOID *)&pIDOT);
+    if (FAILED(hr))
+    {
+        printf("CoCreateInstance Failed: %08X\n", hr);
+        return -1;
+    }
 
-	if (FAILED(hr))
-	{
-		cout << "CoCreateInstance Failed: " << hr << "\n\n";
-		return -1;
-	}
+    if (pIDOT == nullptr)
+    {
+        printf("No instance!\n");
+        return -2;
+    }
 
-	std::string s;
-	VARIANT_BOOL vBool;
+    mybstr_t dot_script;
+    VARIANT_BOOL vBool;
 
-	if (!read_to_str(argv[1], s))
-	{
-		cout << "Could not open input file: " << argv[1] << endl;
-		return -2;
-	}
+    if (!read_to_str(argv[1], dot_script))
+    {
+        printf("Could not open input file: %s\n", argv[1]);
+        return -2;
+    }
 
-	BSTR bstr = A2BSTR(s.c_str());
+    bool ok = false;
+    IBinaryImage *ib = nullptr;
 
-	if (FAILED(pIDOT->Validate(bstr, &vBool)) || vBool == FALSE)
-	{
-		cout << "DOT file syntax error!\n";
-		pIDOT->Release();
-		return -4;
-	}
+    do
+    {
+        hr = pIDOT->Validate(dot_script, &vBool);
+        if (FAILED(hr) || vBool == FALSE)
+        {
+            printf("DOT file syntax error!\n");
+            break;
+        }
 
-	IBinaryImage *ib = 0;
-	pIDOT->ToJPEG(bstr, &ib);
+        hr = pIDOT->ToJPEG(dot_script, &ib);
+        if (FAILED(hr))
+        {
+            printf("Failed to convert to JPG\n");
+            break;
+        }
 
-	CComBSTR bstrOut = argv[2];
-	if (FAILED(ib->Save((BSTR)bstrOut, &vBool)) || vBool == FALSE)
-		cout << "Failed to save!\n";
+        mybstr_t fn(argv[2]);
+        
+        hr = ib->Save(fn, &vBool);
+        if (FAILED(hr) || vBool == FALSE)
+        {
+            printf("Failed to save!\n");
+            break;
+        }
+        printf("Written %s...\n", argv[2]);
+    } while (false);
 
-	ib->Release();
 
-	pIDOT->Release();
+    if (ib != nullptr)
+        ib->Release();
 
-	CoUninitialize();
+    if (pIDOT != nullptr)
+        pIDOT->Release();
 
-	return 0;
+    CoUninitialize();
+
+    return 0;
 }
