@@ -6,7 +6,7 @@
 #include <windows.h>
 #include <string.h>
 #include <stdio.h>
-#include "dot2jpg.h"
+#include "dot2pic.h"
 #include "WinGraphviz.h"
 
 /*
@@ -92,12 +92,17 @@ static HRESULT __stdcall MyCoCreateInstance(
 }
 
 
+bool save_unicode_to_utf8(char * argv, BSTR Text)
+{
+    return false;
+}
+
 //-------------------------------------------------------------------------
 int main(int argc, char *argv[])
 {
     if (argc < 3)
     {
-        printf("Usage: dot_to_jpg FileName.dot FileName.Jpg\n");
+        printf("Usage: dot2pic FileName.dot FileName.[jpg|png|gif]\n");
         return 0;
     }
 
@@ -151,16 +156,54 @@ int main(int argc, char *argv[])
             break;
         }
 
-        hr = pIDOT->ToJPEG(dot_script, &ib);
-        if (FAILED(hr))
+        mybstr_t fn(argv[2]);
+
+        char *ext = strrchr(argv[2], '.');
+        int i_text = -1;
+        if (ext != nullptr)
         {
-            printf("Failed to convert to JPG\n");
+            ++ext;
+            if (_stricmp(ext, "png") == 0)
+                hr = pIDOT->ToPNG(dot_script, &ib);
+            else if (_stricmp(ext, "gif") == 0)
+                hr = pIDOT->ToGIF(dot_script, &ib);
+            else if (_stricmp(ext, "jpg") == 0)
+                hr = pIDOT->ToJPEG(dot_script, &ib);
+            else if (_stricmp(ext, "svg") == 0)
+                i_text = 1;
+            else
+                ext = nullptr;
+        }
+
+        if (ext == nullptr)
+        {
+            printf("No output file name extension passed. Failed to detect output format!\n");
             break;
         }
 
-        mybstr_t fn(argv[2]);
-        
-        hr = ib->Save(fn, &vBool);
+        // Image file?
+        if (i_text == -1)
+        {
+            if (FAILED(hr))
+            {
+                printf("Failed to convert to %s\n", ext);
+                break;
+            }
+
+            hr = ib->Save(fn, &vBool);
+        }
+        else if (i_text == 1) do
+        {
+            BSTR result = nullptr;
+            hr = pIDOT->ToSvg(fn, &result);
+            if (FAILED(hr) || result == nullptr)
+                break;
+
+            hr = save_unicode_to_utf8(argv[2], result) ? S_OK : E_FAIL;
+            SysFreeString(result);
+
+        } while (false);
+
         if (FAILED(hr) || vBool == FALSE)
         {
             printf("Failed to save!\n");
@@ -168,7 +211,6 @@ int main(int argc, char *argv[])
         }
         printf("Written %s...\n", argv[2]);
     } while (false);
-
 
     if (ib != nullptr)
         ib->Release();

@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="9.00"
-	Name="dot2jpg"
+	Name="dot2pic"
 	ProjectGUID="{123360A5-EDAC-4AF1-B4F2-A7E30944142E}"
-	RootNamespace="dot2jpg"
+	RootNamespace="dot2pic"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -38,7 +38,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Release/dot2jpg.tlb"
+				TypeLibraryName=".\Release/dot2pic.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -49,7 +49,7 @@
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
-				PrecompiledHeaderFile=".\Release/dot2jpg.pch"
+				PrecompiledHeaderFile=".\Release/dot2pic.pch"
 				AssemblerListingLocation=".\Release/"
 				ObjectFile=".\Release/"
 				ProgramDataBaseFileName=".\Release/"
@@ -69,10 +69,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\Release/dot2jpg.exe"
+				OutputFile=".\Release/dot2pic.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				ProgramDatabaseFile=".\Release/dot2jpg.pdb"
+				ProgramDatabaseFile=".\Release/dot2pic.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -90,7 +90,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Release/dot2jpg.bsc"
+				OutputFile=".\Release/dot2pic.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -125,7 +125,7 @@
 			/>
 			<Tool
 				Name="VCMIDLTool"
-				TypeLibraryName=".\Debug/dot2jpg.tlb"
+				TypeLibraryName=".\Debug/dot2pic.tlb"
 				HeaderFileName=""
 			/>
 			<Tool
@@ -135,7 +135,7 @@
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
-				PrecompiledHeaderFile=".\Debug/dot2jpg.pch"
+				PrecompiledHeaderFile=".\Debug/dot2pic.pch"
 				AssemblerListingLocation=".\Debug/"
 				ObjectFile=".\Debug/"
 				ProgramDataBaseFileName=".\Debug/"
@@ -157,11 +157,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile=".\Debug/dot2jpg.exe"
+				OutputFile=".\Debug/dot2pic.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\Debug/dot2jpg.pdb"
+				ProgramDatabaseFile=".\Debug/dot2pic.pdb"
 				SubSystem="1"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"
@@ -179,7 +179,7 @@
 			<Tool
 				Name="VCBscMakeTool"
 				SuppressStartupBanner="true"
-				OutputFile=".\Debug/dot2jpg.bsc"
+				OutputFile=".\Debug/dot2pic.bsc"
 			/>
 			<Tool
 				Name="VCFxCopTool"
@@ -196,7 +196,7 @@
 	</References>
 	<Files>
 		<File
-			RelativePath="dot2jpg.cpp"
+			RelativePath="dot2pic.cpp"
 			>
 			<FileConfiguration
 				Name="Release|Win32"

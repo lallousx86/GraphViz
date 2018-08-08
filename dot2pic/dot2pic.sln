@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dot2jpg", "dot2jpg.vcxproj", "{123360A5-EDAC-4AF1-B4F2-A7E30944142E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dot2pic", "dot2pic.vcxproj", "{123360A5-EDAC-4AF1-B4F2-A7E30944142E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
