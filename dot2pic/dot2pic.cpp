@@ -121,7 +121,10 @@ int main(int argc, char *argv[])
         IID_IDOT, (LPVOID *)&pIDOT);
 
     if (hr == REGDB_E_CLASSNOTREG)
-        hr = MyCoCreateInstance("WinGraphViz.dll", CLSID_DOT, NULL, IID_IDOT, (LPVOID *)&pIDOT);
+	{
+		printf("WinGraphViz COM not registered, trying the manual CoCreateInstance()\n");
+		hr = MyCoCreateInstance("WinGraphViz.dll", CLSID_DOT, NULL, IID_IDOT, (LPVOID *)&pIDOT);
+	}
 
     if (FAILED(hr))
     {

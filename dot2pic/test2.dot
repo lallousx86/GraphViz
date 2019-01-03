@@ -1,0 +1,15 @@
+digraph test
+{
+  1 [label="a"];
+  2 [label="b"];
+  0 [label="+"];
+  0->1;
+  0->2;
+
+  subgraph test {
+    rank = same;
+    A;
+    B;
+    C;
+  }
+}
